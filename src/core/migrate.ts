@@ -60,7 +60,7 @@ export async function scanMigration(opts: RootOptions & { clients?: Client[] }):
   const roots = resolveRoots(opts);
   const canonicalRoot = roots.canonicalRoot;
   const candidatesByTarget = new Map<string, MigrationCandidate[]>();
-  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini']);
+  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini', 'github']);
   const includeAgentFiles = opts.scope === 'global';
 
   const canonicalCommands = path.join(canonicalRoot, 'commands');
@@ -90,6 +90,12 @@ export async function scanMigration(opts: RootOptions & { clients?: Client[] }):
       clients.has('cursor') ? { label: 'Cursor skills', dir: path.join(roots.cursorRoot, 'skills') } : null,
       clients.has('opencode') ? { label: 'OpenCode skills', dir: path.join(opencodeSkillsRoot, 'skills') } : null,
       clients.has('gemini') ? { label: 'Gemini skills', dir: path.join(roots.geminiRoot, 'skills') } : null,
+      // GitHub uses .github/skills for project scope and ~/.copilot/skills for global scope.
+      clients.has('github')
+        ? (opts.scope === 'global'
+          ? { label: 'GitHub Copilot skills', dir: path.join(roots.copilotRoot, 'skills') }
+          : { label: 'GitHub skills', dir: path.join(roots.githubRoot, 'skills') })
+        : null,
     ].filter(Boolean) as { label: string; dir: string }[],
     agents: includeAgentFiles
       ? [

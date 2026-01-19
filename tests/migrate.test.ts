@@ -62,3 +62,44 @@ test('migration wizard copies selected items, backs up, and links', async () => 
   expect(await readLinkTarget(path.join(home, '.codex', 'prompts'))).toBe(path.join(agentsRoot, 'commands'));
   expect(await readLinkTarget(path.join(home, '.gemini', 'commands'))).toBe(path.join(agentsRoot, 'commands'));
 });
+
+test('migration wizard copies skills from github/copilot folders', async () => {
+  const home = await makeTempDir('dotagents-home-');
+  const project = await makeTempDir('dotagents-project-');
+
+  // Seed GitHub Copilot skill folders
+  await createSkill(path.join(home, '.copilot', 'skills'), 'global-github-skill');
+  await createSkill(path.join(project, '.github', 'skills'), 'project-github-skill');
+
+  // Test global scope migration (from ~/.copilot/skills)
+  const globalPlan = await scanMigration({ scope: 'global', homeDir: home, clients: ['github'] });
+  expect(globalPlan.auto.length + globalPlan.conflicts.length).toBeGreaterThan(0);
+
+  const globalSelections = new Map();
+  for (const conflict of globalPlan.conflicts) {
+    globalSelections.set(conflict.targetPath, conflict.candidates[0] || null);
+  }
+
+  const globalBackup = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
+  const globalResult = await applyMigration(globalPlan, globalSelections, { scope: 'global', homeDir: home, backup: globalBackup, forceLinks: true, clients: ['github'] });
+  await finalizeBackup(globalBackup);
+
+  expect(globalResult.copied).toBeGreaterThan(0);
+  expect(fs.existsSync(path.join(home, '.agents', 'skills', 'global-github-skill', 'SKILL.md'))).toBe(true);
+
+  // Test project scope migration (from .github/skills)
+  const projectPlan = await scanMigration({ scope: 'project', homeDir: home, projectRoot: project, clients: ['github'] });
+  expect(projectPlan.auto.length + projectPlan.conflicts.length).toBeGreaterThan(0);
+
+  const projectSelections = new Map();
+  for (const conflict of projectPlan.conflicts) {
+    projectSelections.set(conflict.targetPath, conflict.candidates[0] || null);
+  }
+
+  const projectBackup = await createBackupSession({ canonicalRoot: path.join(project, '.agents'), scope: 'project', operation: 'test' });
+  const projectResult = await applyMigration(projectPlan, projectSelections, { scope: 'project', homeDir: home, projectRoot: project, backup: projectBackup, forceLinks: true, clients: ['github'] });
+  await finalizeBackup(projectBackup);
+
+  expect(projectResult.copied).toBeGreaterThan(0);
+  expect(fs.existsSync(path.join(project, '.agents', 'skills', 'project-github-skill', 'SKILL.md'))).toBe(true);
+});
