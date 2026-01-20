@@ -4,6 +4,7 @@ import { test, expect } from 'bun:test';
 import { buildLinkPlan } from '../src/core/plan.js';
 import { applyLinkPlan } from '../src/core/apply.js';
 import { createBackupSession, finalizeBackup } from '../src/core/backup.js';
+import { getLinkTarget } from '../src/core/link-target.js';
 import { makeTempDir, writeFile } from './helpers.js';
 
 async function readLinkTarget(target: string): Promise<string> {
@@ -197,4 +198,117 @@ test('github skills link to ~/.copilot/skills in global scope', async () => {
   const copilotSkills = path.join(home, '.copilot', 'skills');
 
   expect(await readLinkTarget(copilotSkills)).toBe(skills);
+});
+
+test('creates symlinks with relative paths when supported', async () => {
+  const home = await makeTempDir('dotagents-home-');
+
+  const plan = await buildLinkPlan({ scope: 'global', homeDir: home });
+  const backup = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
+  await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+
+  const commands = path.join(home, '.agents', 'commands');
+  const claudeCommands = path.join(home, '.claude', 'commands');
+  const rawLink = await fs.promises.readlink(claudeCommands);
+  const desired = getLinkTarget(commands, claudeCommands, 'dir');
+
+  expect(await readLinkTarget(claudeCommands)).toBe(commands);
+  if (desired.isRelative) {
+    expect(path.isAbsolute(rawLink)).toBe(false);
+    expect(rawLink).toBe(desired.link);
+  } else {
+    expect(path.isAbsolute(rawLink)).toBe(true);
+  }
+});
+
+test('creates relative symlinks for nested targets when supported', async () => {
+  const home = await makeTempDir('dotagents-home-');
+
+  const plan = await buildLinkPlan({ scope: 'global', homeDir: home });
+  const backup = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
+  await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+
+  const agentsFile = path.join(home, '.agents', 'AGENTS.md');
+  const opencodeAgents = path.join(home, '.config', 'opencode', 'AGENTS.md');
+  const rawLink = await fs.promises.readlink(opencodeAgents);
+  const desired = getLinkTarget(agentsFile, opencodeAgents, 'file');
+
+  expect(await readLinkTarget(opencodeAgents)).toBe(agentsFile);
+  if (desired.isRelative) {
+    expect(path.isAbsolute(rawLink)).toBe(false);
+    expect(rawLink).toBe(desired.link);
+  } else {
+    expect(path.isAbsolute(rawLink)).toBe(true);
+  }
+});
+
+test('migrates absolute symlinks to relative when supported', async () => {
+  const home = await makeTempDir('dotagents-home-');
+
+  const commands = path.join(home, '.agents', 'commands');
+  const claudeCommands = path.join(home, '.claude', 'commands');
+  const desired = getLinkTarget(commands, claudeCommands, 'dir');
+  if (!desired.isRelative) return;
+
+  await fs.promises.mkdir(commands, { recursive: true });
+  await fs.promises.mkdir(path.dirname(claudeCommands), { recursive: true });
+
+  await fs.promises.symlink(commands, claudeCommands);
+  const beforeLink = await fs.promises.readlink(claudeCommands);
+  expect(path.isAbsolute(beforeLink)).toBe(true);
+
+  const plan = await buildLinkPlan({ scope: 'global', homeDir: home });
+  const commandsTask = plan.tasks.find((t) => t.type === 'link' && t.target === claudeCommands);
+  expect(commandsTask).toBeDefined();
+  expect(commandsTask?.type).toBe('link');
+  if (commandsTask?.type === 'link') {
+    expect(commandsTask.replaceSymlink).toBe(true);
+  }
+
+  const backup = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const afterLink = await fs.promises.readlink(claudeCommands);
+  expect(path.isAbsolute(afterLink)).toBe(false);
+  expect(afterLink).toBe(desired.link);
+  expect(await readLinkTarget(claudeCommands)).toBe(commands);
+});
+
+test('project symlinks are portable after directory move when supported', async () => {
+  const tempBase = await makeTempDir('dotagents-portable-');
+  const project = path.join(tempBase, 'myproject');
+  await fs.promises.mkdir(project, { recursive: true });
+
+  const plan = await buildLinkPlan({ scope: 'project', projectRoot: project });
+  const backup = await createBackupSession({ canonicalRoot: path.join(project, '.agents'), scope: 'project', operation: 'test' });
+  await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+
+  const commandsDir = path.join(project, '.agents', 'commands');
+  const claudeCommands = path.join(project, '.claude', 'commands');
+  const desired = getLinkTarget(commandsDir, claudeCommands, 'dir');
+  if (!desired.isRelative) return;
+
+  await writeFile(path.join(commandsDir, 'test.md'), '# Test');
+  expect(await readLinkTarget(claudeCommands)).toBe(commandsDir);
+
+  const movedProject = path.join(tempBase, 'renamed-project');
+  await fs.promises.rename(project, movedProject);
+
+  const movedClaudeCommands = path.join(movedProject, '.claude', 'commands');
+  const movedCommandsDir = path.join(movedProject, '.agents', 'commands');
+  const movedDesired = getLinkTarget(movedCommandsDir, movedClaudeCommands, 'dir');
+
+  const rawLink = await fs.promises.readlink(movedClaudeCommands);
+  expect(path.isAbsolute(rawLink)).toBe(false);
+  expect(rawLink).toBe(movedDesired.link);
+  expect(await readLinkTarget(movedClaudeCommands)).toBe(movedCommandsDir);
+
+  const testFile = path.join(movedClaudeCommands, 'test.md');
+  const content = await fs.promises.readFile(testFile, 'utf8');
+  expect(content).toBe('# Test');
 });
