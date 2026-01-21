@@ -137,6 +137,7 @@ async function selectClients(): Promise<Client[]> {
     { label: 'OpenCode', value: 'opencode' },
     { label: 'Gemini', value: 'gemini' },
     { label: 'GitHub', value: 'github' },
+    { label: 'Ampcode', value: 'ampcode' },
   ] as const;
   const selected = await multiselect({
     message: 'Select clients to manage',
@@ -157,6 +158,7 @@ function formatClients(clients: Client[]): string {
     opencode: 'OpenCode',
     gemini: 'Gemini',
     github: 'GitHub',
+    ampcode: 'Ampcode',
   };
   return clients.map((c) => names[c]).join(', ');
 }
@@ -280,7 +282,12 @@ async function run(): Promise<void> {
     ].join('\n'), 'Overview');
 
     const options: { label: string; value: Action }[] = [];
-    if (changes > 0) options.push({ label: `Apply ${changes} changes to .agents`, value: 'change' });
+    if (changes > 0 || conflicts > 0) {
+      const label = conflicts > 0 && changes === 0
+        ? `Resolve ${conflicts} ${pluralize(conflicts, 'conflict')}`
+        : `Apply ${changes} ${pluralize(changes, 'change')}`;
+      options.push({ label, value: 'change' });
+    }
     options.push({ label: 'View status', value: 'status' });
     options.push({ label: 'Change clients', value: 'clients' });
     options.push({ label: 'Undo last change', value: 'undo' });

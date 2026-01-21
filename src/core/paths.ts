@@ -19,6 +19,7 @@ export type ResolvedRoots = {
   geminiRoot: string;
   githubRoot: string;
   copilotRoot: string;
+  ampcodeConfigRoot: string;
   projectRoot: string;
   homeDir: string;
 };
@@ -38,6 +39,7 @@ export function resolveRoots(opts: RootOptions): ResolvedRoots {
       geminiRoot: path.join(homeDir, '.gemini'),
       githubRoot: path.join(projectRoot, '.github'),
       copilotRoot: path.join(homeDir, '.copilot'),
+      ampcodeConfigRoot: path.join(homeDir, '.config', 'amp'),
       projectRoot,
       homeDir,
     };
@@ -53,6 +55,7 @@ export function resolveRoots(opts: RootOptions): ResolvedRoots {
     geminiRoot: path.join(projectRoot, '.gemini'),
     githubRoot: path.join(projectRoot, '.github'),
     copilotRoot: path.join(homeDir, '.copilot'),
+    ampcodeConfigRoot: path.join(homeDir, '.config', 'amp'),
     projectRoot,
     homeDir,
   };

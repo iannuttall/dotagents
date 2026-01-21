@@ -18,7 +18,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
   const agentsFallback = path.join(canonical, 'AGENTS.md');
   const claudeSource = await pathExists(claudeOverride) ? claudeOverride : agentsFallback;
   const geminiSource = await pathExists(geminiOverride) ? geminiOverride : agentsFallback;
-  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini', 'github']);
+  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini', 'github', 'ampcode']);
   const opencodeSkillsRoot = opts.scope === 'global' ? roots.opencodeConfigRoot : roots.opencodeRoot;
 
   const mappings: Mapping[] = [];
@@ -46,6 +46,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
       clients.has('factory') ? path.join(roots.factoryRoot, 'AGENTS.md') : null,
       clients.has('codex') ? path.join(roots.codexRoot, 'AGENTS.md') : null,
       clients.has('opencode') ? path.join(roots.opencodeConfigRoot, 'AGENTS.md') : null,
+      clients.has('ampcode') ? path.join(roots.ampcodeConfigRoot, 'AGENTS.md') : null,
     ].filter(Boolean) as string[];
 
     if (agentTargets.length > 0) {
@@ -90,7 +91,6 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         clients.has('codex') ? path.join(roots.codexRoot, 'skills') : null,
         clients.has('opencode') ? path.join(opencodeSkillsRoot, 'skills') : null,
         clients.has('cursor') ? path.join(roots.cursorRoot, 'skills') : null,
-        clients.has('gemini') ? path.join(roots.geminiRoot, 'skills') : null,
         clients.has('gemini') ? path.join(roots.geminiRoot, 'skills') : null,
         // GitHub uses .github/skills for project scope and ~/.copilot/skills for global scope.
         clients.has('github')
