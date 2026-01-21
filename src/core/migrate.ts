@@ -68,6 +68,7 @@ export async function scanMigration(opts: RootOptions & { clients?: Client[] }):
   const canonicalSkills = path.join(canonicalRoot, 'skills');
   const canonicalAgents = path.join(canonicalRoot, 'AGENTS.md');
   const canonicalClaude = path.join(canonicalRoot, 'CLAUDE.md');
+  const opencodeSkillsRoot = opts.scope === 'global' ? roots.opencodeConfigRoot : roots.opencodeRoot;
 
   const sources = {
     commands: [
@@ -86,7 +87,7 @@ export async function scanMigration(opts: RootOptions & { clients?: Client[] }):
       clients.has('factory') ? { label: 'Factory skills', dir: path.join(roots.factoryRoot, 'skills') } : null,
       clients.has('codex') ? { label: 'Codex skills', dir: path.join(roots.codexRoot, 'skills') } : null,
       clients.has('cursor') ? { label: 'Cursor skills', dir: path.join(roots.cursorRoot, 'skills') } : null,
-      clients.has('opencode') ? { label: 'OpenCode skills', dir: path.join(roots.opencodeRoot, 'skills') } : null,
+      clients.has('opencode') ? { label: 'OpenCode skills', dir: path.join(opencodeSkillsRoot, 'skills') } : null,
     ].filter(Boolean) as { label: string; dir: string }[],
     agents: includeAgentFiles
       ? [

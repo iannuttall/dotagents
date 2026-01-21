@@ -30,13 +30,13 @@ test('creates symlinks from canonical .agents to tool homes', async () => {
   const factoryCommands = path.join(home, '.factory', 'commands');
   const codexPrompts = path.join(home, '.codex', 'prompts');
   const cursorCommands = path.join(home, '.cursor', 'commands');
-  const opencodeCommands = path.join(home, '.opencode', 'commands');
+  const opencodeCommands = path.join(home, '.config', 'opencode', 'commands');
   const claudeAgents = path.join(home, '.claude', 'CLAUDE.md');
   const factoryAgents = path.join(home, '.factory', 'AGENTS.md');
   const codexAgents = path.join(home, '.codex', 'AGENTS.md');
   const opencodeAgents = path.join(home, '.config', 'opencode', 'AGENTS.md');
   const cursorSkills = path.join(home, '.cursor', 'skills');
-  const opencodeSkills = path.join(home, '.opencode', 'skills');
+  const opencodeSkills = path.join(home, '.config', 'opencode', 'skills');
 
   expect(await readLinkTarget(claudeCommands)).toBe(commands);
   expect(await readLinkTarget(factoryCommands)).toBe(commands);

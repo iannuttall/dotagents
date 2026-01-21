@@ -30,7 +30,7 @@ export function resolveRoots(opts: RootOptions): ResolvedRoots {
       factoryRoot: path.join(homeDir, '.factory'),
       codexRoot: path.join(homeDir, '.codex'),
       cursorRoot: path.join(homeDir, '.cursor'),
-      opencodeRoot: path.join(homeDir, '.opencode'),
+      opencodeRoot: path.join(homeDir, '.config', 'opencode'),
       opencodeConfigRoot: path.join(homeDir, '.config', 'opencode'),
       projectRoot,
       homeDir,
