@@ -39,6 +39,7 @@ test('creates symlinks from canonical .agents to tool homes', async () => {
   const opencodeSkills = path.join(home, '.config', 'opencode', 'skills');
   const geminiCommands = path.join(home, '.gemini', 'commands');
   const geminiSkills = path.join(home, '.gemini', 'skills');
+  const copilotSkills = path.join(home, '.copilot', 'skills');
 
   expect(await readLinkTarget(claudeCommands)).toBe(commands);
   expect(await readLinkTarget(factoryCommands)).toBe(commands);
@@ -53,6 +54,7 @@ test('creates symlinks from canonical .agents to tool homes', async () => {
   expect(await readLinkTarget(cursorSkills)).toBe(path.join(canonical, 'skills'));
   expect(await readLinkTarget(opencodeSkills)).toBe(path.join(canonical, 'skills'));
   expect(await readLinkTarget(geminiSkills)).toBe(path.join(canonical, 'skills'));
+  expect(await readLinkTarget(copilotSkills)).toBe(path.join(canonical, 'skills'));
 });
 
 test('adds cursor links when .cursor exists without .claude', async () => {
@@ -164,4 +166,35 @@ test('project scope does not link AGENTS/CLAUDE files', async () => {
     expect(blockedTargets.has(task.source)).toBe(false);
     expect(blockedTargets.has(task.target)).toBe(false);
   }
+});
+
+test('github skills link to .github/skills in project scope', async () => {
+  const home = await makeTempDir('dotagents-home-');
+  const project = await makeTempDir('dotagents-project-');
+
+  const plan = await buildLinkPlan({ scope: 'project', homeDir: home, projectRoot: project });
+  const backup = await createBackupSession({ canonicalRoot: path.join(project, '.agents'), scope: 'project', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const skills = path.join(project, '.agents', 'skills');
+  const githubSkills = path.join(project, '.github', 'skills');
+
+  expect(await readLinkTarget(githubSkills)).toBe(skills);
+});
+
+test('github skills link to ~/.copilot/skills in global scope', async () => {
+  const home = await makeTempDir('dotagents-home-');
+
+  const plan = await buildLinkPlan({ scope: 'global', homeDir: home });
+  const backup = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const skills = path.join(home, '.agents', 'skills');
+  const copilotSkills = path.join(home, '.copilot', 'skills');
+
+  expect(await readLinkTarget(copilotSkills)).toBe(skills);
 });
