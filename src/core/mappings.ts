@@ -17,6 +17,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
   const agentsFallback = path.join(canonical, 'AGENTS.md');
   const agentsSource = await pathExists(claudeOverride) ? claudeOverride : agentsFallback;
   const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode']);
+  const opencodeSkillsRoot = opts.scope === 'global' ? roots.opencodeConfigRoot : roots.opencodeRoot;
 
   const mappings: Mapping[] = [];
   const includeAgentFiles = opts.scope === 'global';
@@ -75,7 +76,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         clients.has('claude') ? path.join(roots.claudeRoot, 'skills') : null,
         clients.has('factory') ? path.join(roots.factoryRoot, 'skills') : null,
         clients.has('codex') ? path.join(roots.codexRoot, 'skills') : null,
-        clients.has('opencode') ? path.join(roots.opencodeRoot, 'skills') : null,
+        clients.has('opencode') ? path.join(opencodeSkillsRoot, 'skills') : null,
         clients.has('cursor') ? path.join(roots.cursorRoot, 'skills') : null,
       ].filter(Boolean) as string[],
       kind: 'dir',

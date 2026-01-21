@@ -57,7 +57,7 @@ Global home affects all projects. Project folder only affects the current direct
 
 `.agents/AGENTS.md` → `~/.config/opencode/AGENTS.md`
 
-`.agents/commands` → `~/.opencode/commands`
+`.agents/commands` → `~/.config/opencode/commands`
 
 `.agents/skills` → `~/.claude/skills`
 
@@ -67,7 +67,7 @@ Global home affects all projects. Project folder only affects the current direct
 
 `.agents/skills` → `~/.cursor/skills`
 
-`.agents/skills` → `~/.opencode/skills`
+`.agents/skills` → `~/.config/opencode/skills`
 
 Project scope links only commands/hooks/skills into the project’s client folders (no AGENTS/CLAUDE rules).
 
