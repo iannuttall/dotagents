@@ -29,19 +29,21 @@ function exitCancelled() {
 
 function mergeAgentStatus(items: LinkStatus[]): LinkStatus[] {
   const claudeEntry = items.find((s) => s.name === 'claude-md') || null;
+  const geminiEntry = items.find((s) => s.name === 'gemini-md') || null;
   const agentsEntry = items.find((s) => s.name === 'agents-md') || null;
-  if (!claudeEntry && !agentsEntry) return items;
+  if (!claudeEntry && !agentsEntry && !geminiEntry) return items;
 
   const merged: LinkStatus = {
     name: 'agents-md',
-    source: claudeEntry?.source || agentsEntry?.source || '',
+    source: claudeEntry?.source || geminiEntry?.source || agentsEntry?.source || '',
     targets: [
       ...(claudeEntry?.targets || []),
+      ...(geminiEntry?.targets || []),
       ...(agentsEntry?.targets || []),
     ],
   };
 
-  const withoutAgents = items.filter((s) => s.name !== 'claude-md' && s.name !== 'agents-md');
+  const withoutAgents = items.filter((s) => s.name !== 'claude-md' && s.name !== 'gemini-md' && s.name !== 'agents-md');
   return [merged, ...withoutAgents];
 }
 
@@ -49,6 +51,7 @@ function displayName(entry: LinkStatus): string {
   if (entry.name === 'agents-md') {
     const sourceFile = path.basename(entry.source);
     if (sourceFile === 'CLAUDE.md') return 'AGENTS.md (Claude override)';
+    if (sourceFile === 'GEMINI.md') return 'AGENTS.md (Gemini override)';
     return 'AGENTS.md';
   }
   return entry.name;
@@ -132,6 +135,7 @@ async function selectClients(): Promise<Client[]> {
     { label: 'Codex', value: 'codex' },
     { label: 'Cursor', value: 'cursor' },
     { label: 'OpenCode', value: 'opencode' },
+    { label: 'Gemini', value: 'gemini' },
   ] as const;
   const selected = await multiselect({
     message: 'Select clients to manage',
@@ -150,6 +154,7 @@ function formatClients(clients: Client[]): string {
     codex: 'Codex',
     cursor: 'Cursor',
     opencode: 'OpenCode',
+    gemini: 'Gemini',
   };
   return clients.map((c) => names[c]).join(', ');
 }

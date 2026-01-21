@@ -37,18 +37,22 @@ test('creates symlinks from canonical .agents to tool homes', async () => {
   const opencodeAgents = path.join(home, '.config', 'opencode', 'AGENTS.md');
   const cursorSkills = path.join(home, '.cursor', 'skills');
   const opencodeSkills = path.join(home, '.config', 'opencode', 'skills');
+  const geminiCommands = path.join(home, '.gemini', 'commands');
+  const geminiSkills = path.join(home, '.gemini', 'skills');
 
   expect(await readLinkTarget(claudeCommands)).toBe(commands);
   expect(await readLinkTarget(factoryCommands)).toBe(commands);
   expect(await readLinkTarget(codexPrompts)).toBe(commands);
   expect(await readLinkTarget(cursorCommands)).toBe(commands);
   expect(await readLinkTarget(opencodeCommands)).toBe(commands);
+  expect(await readLinkTarget(geminiCommands)).toBe(commands);
   expect(await readLinkTarget(claudeAgents)).toBe(agentsFile);
   expect(await readLinkTarget(factoryAgents)).toBe(agentsFile);
   expect(await readLinkTarget(codexAgents)).toBe(agentsFile);
   expect(await readLinkTarget(opencodeAgents)).toBe(agentsFile);
   expect(await readLinkTarget(cursorSkills)).toBe(path.join(canonical, 'skills'));
   expect(await readLinkTarget(opencodeSkills)).toBe(path.join(canonical, 'skills'));
+  expect(await readLinkTarget(geminiSkills)).toBe(path.join(canonical, 'skills'));
 });
 
 test('adds cursor links when .cursor exists without .claude', async () => {
@@ -91,6 +95,7 @@ test('relinks Claude prompt when CLAUDE.md is added', async () => {
   expect(await readLinkTarget(codexAgents)).toBe(agentsFile);
 
   await writeFile(claudeFile, '# Claude override');
+  await writeFile(path.join(canonical, 'GEMINI.md'), '# Gemini override');
 
   const second = await buildLinkPlan({ scope: 'global', homeDir: home });
   const backupSecond = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
@@ -99,6 +104,7 @@ test('relinks Claude prompt when CLAUDE.md is added', async () => {
   expect(result.applied).toBeGreaterThan(0);
 
   expect(await readLinkTarget(claudeAgents)).toBe(claudeFile);
+  expect(await readLinkTarget(path.join(home, '.gemini', 'GEMINI.md'))).toBe(path.join(canonical, 'GEMINI.md'));
   expect(await readLinkTarget(factoryAgents)).toBe(agentsFile);
   expect(await readLinkTarget(codexAgents)).toBe(agentsFile);
 });

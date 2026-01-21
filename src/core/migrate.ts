@@ -60,7 +60,7 @@ export async function scanMigration(opts: RootOptions & { clients?: Client[] }):
   const roots = resolveRoots(opts);
   const canonicalRoot = roots.canonicalRoot;
   const candidatesByTarget = new Map<string, MigrationCandidate[]>();
-  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode']);
+  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini']);
   const includeAgentFiles = opts.scope === 'global';
 
   const canonicalCommands = path.join(canonicalRoot, 'commands');
@@ -77,6 +77,7 @@ export async function scanMigration(opts: RootOptions & { clients?: Client[] }):
       clients.has('codex') ? { label: 'Codex prompts', dir: path.join(roots.codexRoot, 'prompts') } : null,
       clients.has('cursor') ? { label: 'Cursor commands', dir: path.join(roots.cursorRoot, 'commands') } : null,
       clients.has('opencode') ? { label: 'OpenCode commands', dir: path.join(roots.opencodeRoot, 'commands') } : null,
+      clients.has('gemini') ? { label: 'Gemini commands', dir: path.join(roots.geminiRoot, 'commands') } : null,
     ].filter(Boolean) as { label: string; dir: string }[],
     hooks: [
       clients.has('claude') ? { label: 'Claude hooks', dir: path.join(roots.claudeRoot, 'hooks') } : null,
@@ -88,6 +89,7 @@ export async function scanMigration(opts: RootOptions & { clients?: Client[] }):
       clients.has('codex') ? { label: 'Codex skills', dir: path.join(roots.codexRoot, 'skills') } : null,
       clients.has('cursor') ? { label: 'Cursor skills', dir: path.join(roots.cursorRoot, 'skills') } : null,
       clients.has('opencode') ? { label: 'OpenCode skills', dir: path.join(opencodeSkillsRoot, 'skills') } : null,
+      clients.has('gemini') ? { label: 'Gemini skills', dir: path.join(roots.geminiRoot, 'skills') } : null,
     ].filter(Boolean) as { label: string; dir: string }[],
     agents: includeAgentFiles
       ? [
@@ -100,6 +102,11 @@ export async function scanMigration(opts: RootOptions & { clients?: Client[] }):
     claude: includeAgentFiles
       ? [
           clients.has('claude') ? { label: 'Claude CLAUDE.md', file: path.join(roots.claudeRoot, 'CLAUDE.md') } : null,
+        ].filter(Boolean) as { label: string; file: string }[]
+      : [],
+    gemini: includeAgentFiles
+      ? [
+          clients.has('gemini') ? { label: 'Gemini GEMINI.md', file: path.join(roots.geminiRoot, 'GEMINI.md') } : null,
         ].filter(Boolean) as { label: string; file: string }[]
       : [],
   } as const;
@@ -150,6 +157,12 @@ export async function scanMigration(opts: RootOptions & { clients?: Client[] }):
   for (const src of sources.claude) {
     if (!await pathExists(src.file) || await isSymlink(src.file)) continue;
     addCandidate({ label: src.label, targetPath: canonicalClaude, kind: 'file', action: 'copy', sourcePath: src.file });
+  }
+
+  const canonicalGemini = path.join(canonicalRoot, 'GEMINI.md');
+  for (const src of sources.gemini) {
+    if (!await pathExists(src.file) || await isSymlink(src.file)) continue;
+    addCandidate({ label: src.label, targetPath: canonicalGemini, kind: 'file', action: 'copy', sourcePath: src.file });
   }
 
   const auto: MigrationCandidate[] = [];

@@ -63,12 +63,19 @@ export async function buildLinkPlan(opts: MappingOptions): Promise<LinkPlan> {
 
   for (const mapping of mappings) {
     tasks.push(...await ensureSourceTask(mapping.source, mapping.kind));
-    const relinkableSources = mapping.name === 'claude-md'
-      ? [
+    let relinkableSources: string[] | undefined;
+    if (mapping.name === 'claude-md') {
+      relinkableSources = [
         path.join(path.dirname(mapping.source), 'AGENTS.md'),
         path.join(path.dirname(mapping.source), 'CLAUDE.md'),
-      ]
-      : undefined;
+      ];
+    } else if (mapping.name === 'gemini-md') {
+      relinkableSources = [
+        path.join(path.dirname(mapping.source), 'AGENTS.md'),
+        path.join(path.dirname(mapping.source), 'GEMINI.md'),
+      ];
+    }
+
     for (const target of mapping.targets) {
       tasks.push(await analyzeTarget(mapping.source, target, mapping.kind, { relinkableSources }));
     }

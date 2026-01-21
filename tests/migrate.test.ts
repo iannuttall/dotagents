@@ -17,14 +17,17 @@ test('migration wizard copies selected items, backs up, and links', async () => 
   await writeFile(path.join(home, '.claude', 'commands', 'log-session.md'), 'claude');
   await writeFile(path.join(home, '.factory', 'commands', 'log-session.md'), 'factory');
   await writeFile(path.join(home, '.codex', 'prompts', 'unique.md'), 'codex');
+  await writeFile(path.join(home, '.gemini', 'commands', 'log-session.toml'), 'prompt = "gemini"');
 
   await writeFile(path.join(home, '.claude', 'hooks', 'hook.sh'), 'echo claude');
   await writeFile(path.join(home, '.factory', 'hooks', 'hook.sh'), 'echo factory');
 
   await createSkill(path.join(home, '.claude', 'skills'), 'alpha-skill');
   await createSkill(path.join(home, '.factory', 'skills'), 'alpha-skill');
+  await createSkill(path.join(home, '.gemini', 'skills'), 'alpha-skill');
 
   await writeFile(path.join(home, '.claude', 'CLAUDE.md'), '# CLAUDE');
+  await writeFile(path.join(home, '.gemini', 'GEMINI.md'), '# GEMINI AGENTS');
 
   const plan = await scanMigration({ scope: 'global', homeDir: home });
   expect(plan.conflicts.length).toBeGreaterThan(0);
@@ -43,10 +46,12 @@ test('migration wizard copies selected items, backs up, and links', async () => 
   const agentsRoot = path.join(home, '.agents');
   expect(fs.existsSync(path.join(agentsRoot, 'commands', 'log-session.md'))).toBe(true);
   expect(fs.existsSync(path.join(agentsRoot, 'commands', 'unique.md'))).toBe(true);
+  expect(fs.existsSync(path.join(agentsRoot, 'commands', 'log-session.toml'))).toBe(true);
   expect(fs.existsSync(path.join(agentsRoot, 'hooks', 'hook.sh'))).toBe(true);
   expect(fs.existsSync(path.join(agentsRoot, 'skills', 'alpha-skill', 'SKILL.md'))).toBe(true);
   expect(fs.existsSync(path.join(agentsRoot, 'AGENTS.md'))).toBe(true);
   expect(fs.existsSync(path.join(agentsRoot, 'CLAUDE.md'))).toBe(true);
+  expect(fs.existsSync(path.join(agentsRoot, 'GEMINI.md'))).toBe(true);
 
   // Backup created
   expect(fs.existsSync(result.backupDir)).toBe(true);
@@ -55,4 +60,5 @@ test('migration wizard copies selected items, backs up, and links', async () => 
   expect(await readLinkTarget(path.join(home, '.claude', 'commands'))).toBe(path.join(agentsRoot, 'commands'));
   expect(await readLinkTarget(path.join(home, '.factory', 'commands'))).toBe(path.join(agentsRoot, 'commands'));
   expect(await readLinkTarget(path.join(home, '.codex', 'prompts'))).toBe(path.join(agentsRoot, 'commands'));
+  expect(await readLinkTarget(path.join(home, '.gemini', 'commands'))).toBe(path.join(agentsRoot, 'commands'));
 });

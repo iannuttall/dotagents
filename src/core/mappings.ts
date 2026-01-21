@@ -14,9 +14,11 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
   const roots = resolveRoots(opts);
   const canonical = roots.canonicalRoot;
   const claudeOverride = path.join(canonical, 'CLAUDE.md');
+  const geminiOverride = path.join(canonical, 'GEMINI.md');
   const agentsFallback = path.join(canonical, 'AGENTS.md');
-  const agentsSource = await pathExists(claudeOverride) ? claudeOverride : agentsFallback;
-  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode']);
+  const claudeSource = await pathExists(claudeOverride) ? claudeOverride : agentsFallback;
+  const geminiSource = await pathExists(geminiOverride) ? geminiOverride : agentsFallback;
+  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini']);
   const opencodeSkillsRoot = opts.scope === 'global' ? roots.opencodeConfigRoot : roots.opencodeRoot;
 
   const mappings: Mapping[] = [];
@@ -24,8 +26,17 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
   if (includeAgentFiles && clients.has('claude')) {
     mappings.push({
       name: 'claude-md',
-      source: agentsSource,
+      source: claudeSource,
       targets: [path.join(roots.claudeRoot, 'CLAUDE.md')],
+      kind: 'file',
+    });
+  }
+
+  if (includeAgentFiles && clients.has('gemini')) {
+    mappings.push({
+      name: 'gemini-md',
+      source: geminiSource,
+      targets: [path.join(roots.geminiRoot, 'GEMINI.md')],
       kind: 'file',
     });
   }
@@ -57,6 +68,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         clients.has('codex') ? path.join(roots.codexRoot, 'prompts') : null,
         clients.has('opencode') ? path.join(roots.opencodeRoot, 'commands') : null,
         clients.has('cursor') ? path.join(roots.cursorRoot, 'commands') : null,
+        clients.has('gemini') ? path.join(roots.geminiRoot, 'commands') : null,
       ].filter(Boolean) as string[],
       kind: 'dir',
     },
@@ -78,6 +90,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         clients.has('codex') ? path.join(roots.codexRoot, 'skills') : null,
         clients.has('opencode') ? path.join(opencodeSkillsRoot, 'skills') : null,
         clients.has('cursor') ? path.join(roots.cursorRoot, 'skills') : null,
+        clients.has('gemini') ? path.join(roots.geminiRoot, 'skills') : null,
       ].filter(Boolean) as string[],
       kind: 'dir',
     },

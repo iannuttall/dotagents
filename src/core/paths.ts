@@ -16,6 +16,7 @@ export type ResolvedRoots = {
   cursorRoot: string;
   opencodeRoot: string;
   opencodeConfigRoot: string;
+  geminiRoot: string;
   projectRoot: string;
   homeDir: string;
 };
@@ -32,6 +33,7 @@ export function resolveRoots(opts: RootOptions): ResolvedRoots {
       cursorRoot: path.join(homeDir, '.cursor'),
       opencodeRoot: path.join(homeDir, '.config', 'opencode'),
       opencodeConfigRoot: path.join(homeDir, '.config', 'opencode'),
+      geminiRoot: path.join(homeDir, '.gemini'),
       projectRoot,
       homeDir,
     };
@@ -44,6 +46,7 @@ export function resolveRoots(opts: RootOptions): ResolvedRoots {
     cursorRoot: path.join(projectRoot, '.cursor'),
     opencodeRoot: path.join(projectRoot, '.opencode'),
     opencodeConfigRoot: path.join(homeDir, '.config', 'opencode'),
+    geminiRoot: path.join(projectRoot, '.gemini'),
     projectRoot,
     homeDir,
   };
