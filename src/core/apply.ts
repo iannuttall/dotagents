@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { LinkPlan, LinkTask, SourceKind } from './types.js';
+import { getLinkTarget } from './link-target.js';
 import { ensureDir, ensureFile, removePath, pathExists } from '../utils/fs.js';
 import type { BackupSession } from './backup.js';
 import { backupPath, recordCreatedPath } from './backup.js';
@@ -23,18 +24,20 @@ async function createLink(
   overwrite: boolean,
   backup?: BackupSession,
 ): Promise<{ created: boolean; backedUp: boolean }> {
+  const linkTarget = getLinkTarget(source, target, kind);
+
   if (await pathExists(target)) {
     if (!overwrite) return { created: false, backedUp: false };
     const backedUp = backup ? await backupPath(target, backup) : false;
     if (await pathExists(target)) await removePath(target);
     await ensureDir(path.dirname(target));
     const type = kind === 'dir' ? 'junction' : 'file';
-    await fs.promises.symlink(source, target, type as fs.symlink.Type);
+    await fs.promises.symlink(linkTarget.link, target, type as fs.symlink.Type);
     return { created: true, backedUp };
   }
   await ensureDir(path.dirname(target));
   const type = kind === 'dir' ? 'junction' : 'file';
-  await fs.promises.symlink(source, target, type as fs.symlink.Type);
+  await fs.promises.symlink(linkTarget.link, target, type as fs.symlink.Type);
   return { created: true, backedUp: false };
 }
 

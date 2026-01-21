@@ -4,6 +4,7 @@ import { getMappings } from './mappings.js';
 import type { MappingOptions } from './mappings.js';
 import type { LinkPlan, LinkTask, SourceKind, ConflictTask } from './types.js';
 import { pathExists } from '../utils/fs.js';
+import { getLinkTarget } from './link-target.js';
 
 async function getLinkTargetAbsolute(targetPath: string): Promise<string | null> {
   try {
@@ -40,8 +41,14 @@ async function analyzeTarget(
   if (!exists) return { type: 'link', source, target, kind };
   const stat = await fs.promises.lstat(target);
   if (stat.isSymbolicLink()) {
+    const rawLink = await fs.promises.readlink(target);
     const resolved = await getLinkTargetAbsolute(target);
     if (resolved && path.resolve(resolved) === path.resolve(source)) {
+      const desired = getLinkTarget(source, target, kind);
+      if (desired.isRelative && path.isAbsolute(rawLink)) {
+        // Migrate absolute links to relative when safe on this platform.
+        return { type: 'link', source, target, kind, replaceSymlink: true };
+      }
       return { type: 'noop', source, target };
     }
     if (resolved && opts?.relinkableSources) {
