@@ -128,8 +128,11 @@ Rules:
 Notes / limitations:
 
 - This is project-scope only (it never touches `~/.claude`, `~/.cursor`, or other global rule locations).
-- Cursor rules are typically `.mdc` files; sharing one folder across tools is convenient, but you may want to keep tool-specific formatting in mind.
-- GitHub Copilot’s path-scoped instructions expect `*.instructions.md` files with frontmatter like `applyTo`.
+- Tools use different rule formats. Keeping a shared `.agents/rules` folder is convenient, but you may need tool-specific files for path targeting:
+  - Claude rules are typically Markdown with YAML frontmatter like `paths: src/api/**/*.ts` (you can verify what’s active via `/memory` in Claude Code).
+  - Cursor rules are typically `.mdc` files with fields like `globs`.
+  - GitHub Copilot’s `.github/instructions` expects `*.instructions.md` files with frontmatter like `applyTo`.
+- A practical approach is to colocate multiple formats side-by-side (e.g. `backend.md`, `backend.mdc`, `backend.instructions.md`) and let each tool ignore what it doesn’t understand.
 
 ## Development
 
