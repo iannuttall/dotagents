@@ -77,7 +77,59 @@ Global home affects all projects. Project folder only affects the current direct
 
 `.agents/skills` → `~/.gemini/skills`
 
-Project scope links only commands/hooks/skills into the project’s client folders (no AGENTS/CLAUDE/GEMINI rules).
+Project scope links commands/hooks/skills and `rules/` into the project’s client folders. It does not link instruction files (`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`).
+
+## Where it links (project scope)
+
+Commands:
+
+`.agents/commands` → `.claude/commands`
+
+`.agents/commands` → `.factory/commands`
+
+`.agents/commands` → `.codex/prompts`
+
+`.agents/commands` → `.cursor/commands`
+
+`.agents/commands` → `.opencode/commands`
+
+`.agents/commands` → `.gemini/commands`
+
+Hooks:
+
+`.agents/hooks` → `.claude/hooks`
+
+`.agents/hooks` → `.factory/hooks`
+
+Skills:
+
+`.agents/skills` → `.claude/skills`
+
+`.agents/skills` → `.factory/skills`
+
+`.agents/skills` → `.codex/skills`
+
+`.agents/skills` → `.cursor/skills`
+
+`.agents/skills` → `.opencode/skills`
+
+`.agents/skills` → `.gemini/skills`
+
+`.agents/skills` → `.github/skills` (GitHub Copilot)
+
+Rules:
+
+`.agents/rules` → `.claude/rules` (Claude)
+
+`.agents/rules` → `.cursor/rules` (Cursor)
+
+`.agents/rules` → `.github/instructions` (GitHub Copilot)
+
+Notes / limitations:
+
+- This is project-scope only (it never touches `~/.claude`, `~/.cursor`, or other global rule locations).
+- Cursor rules are typically `.mdc` files; sharing one folder across tools is convenient, but you may want to keep tool-specific formatting in mind.
+- GitHub Copilot’s path-scoped instructions expect `*.instructions.md` files with frontmatter like `applyTo`.
 
 ## Development
 
@@ -109,7 +161,7 @@ bun run build
 - Skills require a valid `SKILL.md` with `name` + `description` frontmatter.
 - Claude prompt precedence: if `.agents/CLAUDE.md` exists, it links to `.claude/CLAUDE.md`. Otherwise `.agents/AGENTS.md` is used. After adding or removing `.agents/CLAUDE.md`, re-run dotagents and apply/repair links to update the symlink. Factory/Codex always link to `.agents/AGENTS.md`.
 - Gemini context file precedence: if `.agents/GEMINI.md` exists, it links to `.gemini/GEMINI.md`. Otherwise `.agents/AGENTS.md` is used. After adding or removing `.agents/GEMINI.md`, re-run dotagents and apply/repair links to update the symlink.
-- Project scope creates `.agents` plus client folders for commands/hooks/skills only. Rule files (`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`) are left to the repo root so you can manage them explicitly.
+- Project scope creates `.agents` plus client folders for commands/hooks/skills and `rules/`. Instruction files (`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`) are left to the repo root so you can manage them explicitly.
 - Backups are stored under `.agents/backup/<timestamp>` and can be restored via “Undo last change.”
 
 ## License
