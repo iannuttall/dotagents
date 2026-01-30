@@ -59,6 +59,23 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
     }
   }
 
+  if (opts.scope === 'project') {
+    const ruleTargets = [
+      clients.has('claude') ? path.join(roots.claudeRoot, 'rules') : null,
+      clients.has('cursor') ? path.join(roots.cursorRoot, 'rules') : null,
+      clients.has('github') ? path.join(roots.githubRoot, 'instructions') : null,
+    ].filter(Boolean) as string[];
+
+    if (ruleTargets.length > 0) {
+      mappings.push({
+        name: 'rules',
+        source: path.join(canonical, 'rules'),
+        targets: ruleTargets,
+        kind: 'dir',
+      });
+    }
+  }
+
   mappings.push(
     {
       name: 'commands',

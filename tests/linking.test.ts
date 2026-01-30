@@ -169,6 +169,26 @@ test('project scope does not link AGENTS/CLAUDE files', async () => {
   }
 });
 
+test('project scope links .agents/rules to supported tool rule folders', async () => {
+  const home = await makeTempDir('dotagents-home-');
+  const project = await makeTempDir('dotagents-project-');
+
+  const plan = await buildLinkPlan({ scope: 'project', homeDir: home, projectRoot: project });
+  const backup = await createBackupSession({ canonicalRoot: path.join(project, '.agents'), scope: 'project', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const rules = path.join(project, '.agents', 'rules');
+  const cursorRules = path.join(project, '.cursor', 'rules');
+  const claudeRules = path.join(project, '.claude', 'rules');
+  const githubInstructions = path.join(project, '.github', 'instructions');
+
+  expect(await readLinkTarget(cursorRules)).toBe(rules);
+  expect(await readLinkTarget(claudeRules)).toBe(rules);
+  expect(await readLinkTarget(githubInstructions)).toBe(rules);
+});
+
 test('github skills link to .github/skills in project scope', async () => {
   const home = await makeTempDir('dotagents-home-');
   const project = await makeTempDir('dotagents-project-');
