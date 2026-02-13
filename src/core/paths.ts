@@ -20,6 +20,7 @@ export type ResolvedRoots = {
   githubRoot: string;
   copilotRoot: string;
   ampcodeConfigRoot: string;
+  kilocodeRoot: string;
   projectRoot: string;
   homeDir: string;
 };
@@ -40,6 +41,7 @@ export function resolveRoots(opts: RootOptions): ResolvedRoots {
       githubRoot: path.join(projectRoot, '.github'),
       copilotRoot: path.join(homeDir, '.copilot'),
       ampcodeConfigRoot: path.join(homeDir, '.config', 'amp'),
+      kilocodeRoot: path.join(homeDir, '.kilocode'),
       projectRoot,
       homeDir,
     };
@@ -56,6 +58,7 @@ export function resolveRoots(opts: RootOptions): ResolvedRoots {
     githubRoot: path.join(projectRoot, '.github'),
     copilotRoot: path.join(homeDir, '.copilot'),
     ampcodeConfigRoot: path.join(homeDir, '.config', 'amp'),
+    kilocodeRoot: path.join(projectRoot, '.kilocode'),
     projectRoot,
     homeDir,
   };

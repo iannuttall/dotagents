@@ -136,6 +136,7 @@ async function selectClients(): Promise<Client[]> {
     { label: 'Cursor', value: 'cursor' },
     { label: 'OpenCode', value: 'opencode' },
     { label: 'Gemini', value: 'gemini' },
+    { label: 'Kilo Code', value: 'kilocode' },
     { label: 'GitHub', value: 'github' },
     { label: 'Ampcode', value: 'ampcode' },
   ] as const;
@@ -157,6 +158,7 @@ function formatClients(clients: Client[]): string {
     cursor: 'Cursor',
     opencode: 'OpenCode',
     gemini: 'Gemini',
+    kilocode: 'Kilo Code',
     github: 'GitHub',
     ampcode: 'Ampcode',
   };
