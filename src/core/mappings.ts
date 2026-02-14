@@ -18,7 +18,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
   const agentsFallback = path.join(canonical, 'AGENTS.md');
   const claudeSource = await pathExists(claudeOverride) ? claudeOverride : agentsFallback;
   const geminiSource = await pathExists(geminiOverride) ? geminiOverride : agentsFallback;
-  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini', 'github', 'ampcode']);
+  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini', 'github', 'ampcode', 'roocode']);
   const opencodeSkillsRoot = opts.scope === 'global' ? roots.opencodeConfigRoot : roots.opencodeRoot;
 
   const mappings: Mapping[] = [];
@@ -47,6 +47,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
       clients.has('codex') ? path.join(roots.codexRoot, 'AGENTS.md') : null,
       clients.has('opencode') ? path.join(roots.opencodeConfigRoot, 'AGENTS.md') : null,
       clients.has('ampcode') ? path.join(roots.ampcodeConfigRoot, 'AGENTS.md') : null,
+      clients.has('roocode') ? path.join(roots.roocodeRoot, 'AGENTS.md') : null,
     ].filter(Boolean) as string[];
 
     if (agentTargets.length > 0) {
@@ -70,6 +71,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         clients.has('opencode') ? path.join(roots.opencodeRoot, 'commands') : null,
         clients.has('cursor') ? path.join(roots.cursorRoot, 'commands') : null,
         clients.has('gemini') ? path.join(roots.geminiRoot, 'commands') : null,
+        clients.has('roocode') ? path.join(roots.roocodeRoot, 'commands') : null,
       ].filter(Boolean) as string[],
       kind: 'dir',
     },
@@ -96,6 +98,15 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         clients.has('github')
           ? (opts.scope === 'global' ? path.join(roots.copilotRoot, 'skills') : path.join(roots.githubRoot, 'skills'))
           : null,
+        clients.has('roocode') ? path.join(roots.roocodeRoot, 'skills') : null,
+      ].filter(Boolean) as string[],
+      kind: 'dir',
+    },
+    {
+      name: 'rules',
+      source: path.join(canonical, 'rules'),
+      targets: [
+        clients.has('roocode') ? path.join(roots.roocodeRoot, 'rules') : null,
       ].filter(Boolean) as string[],
       kind: 'dir',
     },

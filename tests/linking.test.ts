@@ -200,6 +200,56 @@ test('github skills link to ~/.copilot/skills in global scope', async () => {
   expect(await readLinkTarget(copilotSkills)).toBe(skills);
 });
 
+test('roocode links to .roo directory in global scope', async () => {
+  const home = await makeTempDir('dotagents-home-');
+
+  const plan = await buildLinkPlan({ scope: 'global', homeDir: home, clients: ['roocode'] });
+  const backup = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const canonical = path.join(home, '.agents');
+  const commands = path.join(canonical, 'commands');
+  const skills = path.join(canonical, 'skills');
+  const rules = path.join(canonical, 'rules');
+  const agentsFile = path.join(canonical, 'AGENTS.md');
+
+  const roocodeCommands = path.join(home, '.roo', 'commands');
+  const roocodeSkills = path.join(home, '.roo', 'skills');
+  const roocodeRules = path.join(home, '.roo', 'rules');
+  const roocodeAgents = path.join(home, '.roo', 'AGENTS.md');
+
+  expect(await readLinkTarget(roocodeCommands)).toBe(commands);
+  expect(await readLinkTarget(roocodeSkills)).toBe(skills);
+  expect(await readLinkTarget(roocodeRules)).toBe(rules);
+  expect(await readLinkTarget(roocodeAgents)).toBe(agentsFile);
+});
+
+test('roocode links to .roo directory in project scope', async () => {
+  const home = await makeTempDir('dotagents-home-');
+  const project = await makeTempDir('dotagents-project-');
+
+  const plan = await buildLinkPlan({ scope: 'project', homeDir: home, projectRoot: project, clients: ['roocode'] });
+  const backup = await createBackupSession({ canonicalRoot: path.join(project, '.agents'), scope: 'project', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const canonical = path.join(project, '.agents');
+  const commands = path.join(canonical, 'commands');
+  const skills = path.join(canonical, 'skills');
+  const rules = path.join(canonical, 'rules');
+
+  const roocodeCommands = path.join(project, '.roo', 'commands');
+  const roocodeSkills = path.join(project, '.roo', 'skills');
+  const roocodeRules = path.join(project, '.roo', 'rules');
+
+  expect(await readLinkTarget(roocodeCommands)).toBe(commands);
+  expect(await readLinkTarget(roocodeSkills)).toBe(skills);
+  expect(await readLinkTarget(roocodeRules)).toBe(rules);
+});
+
 test('creates symlinks with relative paths when supported', async () => {
   const home = await makeTempDir('dotagents-home-');
 
