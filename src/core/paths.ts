@@ -21,6 +21,7 @@ export type ResolvedRoots = {
   copilotRoot: string;
   ampcodeConfigRoot: string;
   roocodeRoot: string;
+  windsurfRoot: string;
   projectRoot: string;
   homeDir: string;
 };
@@ -42,6 +43,7 @@ export function resolveRoots(opts: RootOptions): ResolvedRoots {
       copilotRoot: path.join(homeDir, '.copilot'),
       ampcodeConfigRoot: path.join(homeDir, '.config', 'amp'),
       roocodeRoot: path.join(homeDir, '.roo'),
+      windsurfRoot: homeDir,
       projectRoot,
       homeDir,
     };
@@ -59,6 +61,7 @@ export function resolveRoots(opts: RootOptions): ResolvedRoots {
     copilotRoot: path.join(homeDir, '.copilot'),
     ampcodeConfigRoot: path.join(homeDir, '.config', 'amp'),
     roocodeRoot: path.join(projectRoot, '.roo'),
+    windsurfRoot: projectRoot,
     projectRoot,
     homeDir,
   };

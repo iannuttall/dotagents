@@ -137,6 +137,7 @@ async function selectClients(): Promise<Client[]> {
     { label: 'OpenCode', value: 'opencode' },
     { label: 'Gemini', value: 'gemini' },
     { label: 'Roo Code', value: 'roocode' },
+    { label: 'Windsurf', value: 'windsurf' },
     { label: 'GitHub', value: 'github' },
     { label: 'Ampcode', value: 'ampcode' },
   ] as const;
@@ -159,6 +160,7 @@ function formatClients(clients: Client[]): string {
     opencode: 'OpenCode',
     gemini: 'Gemini',
     roocode: 'Roo Code',
+    windsurf: 'Windsurf',
     github: 'GitHub',
     ampcode: 'Ampcode',
   };

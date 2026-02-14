@@ -18,7 +18,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
   const agentsFallback = path.join(canonical, 'AGENTS.md');
   const claudeSource = await pathExists(claudeOverride) ? claudeOverride : agentsFallback;
   const geminiSource = await pathExists(geminiOverride) ? geminiOverride : agentsFallback;
-  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini', 'github', 'ampcode', 'roocode']);
+  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini', 'github', 'ampcode', 'roocode', 'windsurf']);
   const opencodeSkillsRoot = opts.scope === 'global' ? roots.opencodeConfigRoot : roots.opencodeRoot;
 
   const mappings: Mapping[] = [];
@@ -58,6 +58,16 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         kind: 'file',
       });
     }
+  }
+
+  // Windsurf uses a single .windsurfrules file at the root level
+  if (clients.has('windsurf')) {
+    mappings.push({
+      name: 'windsurfrules',
+      source: agentsFallback,
+      targets: [path.join(roots.windsurfRoot, '.windsurfrules')],
+      kind: 'file',
+    });
   }
 
   mappings.push(

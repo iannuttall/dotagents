@@ -250,6 +250,39 @@ test('roocode links to .roo directory in project scope', async () => {
   expect(await readLinkTarget(roocodeRules)).toBe(rules);
 });
 
+test('windsurf links to .windsurfrules file in global scope', async () => {
+  const home = await makeTempDir('dotagents-home-');
+
+  const plan = await buildLinkPlan({ scope: 'global', homeDir: home, clients: ['windsurf'] });
+  const backup = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const canonical = path.join(home, '.agents');
+  const agentsFile = path.join(canonical, 'AGENTS.md');
+  const windsurfRules = path.join(home, '.windsurfrules');
+
+  expect(await readLinkTarget(windsurfRules)).toBe(agentsFile);
+});
+
+test('windsurf links to .windsurfrules file in project scope', async () => {
+  const home = await makeTempDir('dotagents-home-');
+  const project = await makeTempDir('dotagents-project-');
+
+  const plan = await buildLinkPlan({ scope: 'project', homeDir: home, projectRoot: project, clients: ['windsurf'] });
+  const backup = await createBackupSession({ canonicalRoot: path.join(project, '.agents'), scope: 'project', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const canonical = path.join(project, '.agents');
+  const agentsFile = path.join(canonical, 'AGENTS.md');
+  const windsurfRules = path.join(project, '.windsurfrules');
+
+  expect(await readLinkTarget(windsurfRules)).toBe(agentsFile);
+});
+
 test('creates symlinks with relative paths when supported', async () => {
   const home = await makeTempDir('dotagents-home-');
 
