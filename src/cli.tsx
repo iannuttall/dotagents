@@ -138,6 +138,9 @@ async function selectClients(): Promise<Client[]> {
     { label: 'Gemini', value: 'gemini' },
     { label: 'GitHub', value: 'github' },
     { label: 'Ampcode', value: 'ampcode' },
+    { label: 'Kilo Code', value: 'kilocode' },
+    { label: 'Roo Code', value: 'roocode' },
+    { label: 'Windsurf', value: 'windsurf' },
   ] as const;
   const selected = await multiselect({
     message: 'Select clients to manage',
@@ -159,6 +162,9 @@ function formatClients(clients: Client[]): string {
     gemini: 'Gemini',
     github: 'GitHub',
     ampcode: 'Ampcode',
+    kilocode: 'Kilo Code',
+    roocode: 'Roo Code',
+    windsurf: 'Windsurf',
   };
   return clients.map((c) => names[c]).join(', ');
 }

@@ -150,13 +150,15 @@ test('project scope does not link AGENTS/CLAUDE files', async () => {
 
   const plan = await buildLinkPlan({ scope: 'project', homeDir: home, projectRoot: project });
 
+  // In project scope, we should not create symlinks to tool-specific AGENTS.md files
+  // But we DO allow .windsurfrules to link from AGENTS.md (different target name)
   const blockedTargets = new Set([
     path.join(project, '.claude', 'CLAUDE.md'),
     path.join(project, '.factory', 'AGENTS.md'),
     path.join(project, '.codex', 'AGENTS.md'),
     path.join(home, '.config', 'opencode', 'AGENTS.md'),
-    path.join(project, '.agents', 'AGENTS.md'),
-    path.join(project, '.agents', 'CLAUDE.md'),
+    path.join(project, '.kilocode', 'AGENTS.md'),
+    path.join(project, '.roo', 'AGENTS.md'),
   ]);
 
   for (const task of plan.tasks) {
@@ -164,7 +166,6 @@ test('project scope does not link AGENTS/CLAUDE files', async () => {
       expect(blockedTargets.has(task.path)).toBe(false);
       continue;
     }
-    expect(blockedTargets.has(task.source)).toBe(false);
     expect(blockedTargets.has(task.target)).toBe(false);
   }
 });
@@ -311,4 +312,85 @@ test('project symlinks are portable after directory move when supported', async 
   const testFile = path.join(movedClaudeCommands, 'test.md');
   const content = await fs.promises.readFile(testFile, 'utf8');
   expect(content).toBe('# Test');
+});
+
+test('kilocode creates symlinks for rules and AGENTS.md in global scope', async () => {
+  const home = await makeTempDir('dotagents-home-');
+
+  const plan = await buildLinkPlan({ scope: 'global', homeDir: home, clients: ['kilocode'] });
+  const backup = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const canonical = path.join(home, '.agents');
+  const agentsFile = path.join(canonical, 'AGENTS.md');
+  const rulesDir = path.join(canonical, 'rules');
+
+  const kilocodeAgents = path.join(home, '.kilocode', 'AGENTS.md');
+  const kilocodeRules = path.join(home, '.kilocode', 'rules');
+
+  expect(await readLinkTarget(kilocodeAgents)).toBe(agentsFile);
+  expect(await readLinkTarget(kilocodeRules)).toBe(rulesDir);
+});
+
+test('roocode creates symlinks for rules, skills, commands, and AGENTS.md in global scope', async () => {
+  const home = await makeTempDir('dotagents-home-');
+
+  const plan = await buildLinkPlan({ scope: 'global', homeDir: home, clients: ['roocode'] });
+  const backup = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const canonical = path.join(home, '.agents');
+  const agentsFile = path.join(canonical, 'AGENTS.md');
+  const rulesDir = path.join(canonical, 'rules');
+  const skillsDir = path.join(canonical, 'skills');
+  const commandsDir = path.join(canonical, 'commands');
+
+  const roocodeAgents = path.join(home, '.roo', 'AGENTS.md');
+  const roocodeRules = path.join(home, '.roo', 'rules');
+  const roocodeSkills = path.join(home, '.roo', 'skills');
+  const roocodeCommands = path.join(home, '.roo', 'commands');
+
+  expect(await readLinkTarget(roocodeAgents)).toBe(agentsFile);
+  expect(await readLinkTarget(roocodeRules)).toBe(rulesDir);
+  expect(await readLinkTarget(roocodeSkills)).toBe(skillsDir);
+  expect(await readLinkTarget(roocodeCommands)).toBe(commandsDir);
+});
+
+test('windsurf creates symlink for .windsurfrules in global scope', async () => {
+  const home = await makeTempDir('dotagents-home-');
+
+  const plan = await buildLinkPlan({ scope: 'global', homeDir: home, clients: ['windsurf'] });
+  const backup = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const canonical = path.join(home, '.agents');
+  const agentsFile = path.join(canonical, 'AGENTS.md');
+  const windsurfrules = path.join(home, '.windsurfrules');
+
+  expect(await readLinkTarget(windsurfrules)).toBe(agentsFile);
+});
+
+test('kilocode and roocode rules both link from canonical rules directory', async () => {
+  const home = await makeTempDir('dotagents-home-');
+
+  const plan = await buildLinkPlan({ scope: 'global', homeDir: home, clients: ['kilocode', 'roocode'] });
+  const backup = await createBackupSession({ canonicalRoot: path.join(home, '.agents'), scope: 'global', operation: 'test' });
+  const result = await applyLinkPlan(plan, { backup });
+  await finalizeBackup(backup);
+  expect(result.applied).toBeGreaterThan(0);
+
+  const canonical = path.join(home, '.agents');
+  const rulesDir = path.join(canonical, 'rules');
+
+  const kilocodeRules = path.join(home, '.kilocode', 'rules');
+  const roocodeRules = path.join(home, '.roo', 'rules');
+
+  expect(await readLinkTarget(kilocodeRules)).toBe(rulesDir);
+  expect(await readLinkTarget(roocodeRules)).toBe(rulesDir);
 });

@@ -18,7 +18,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
   const agentsFallback = path.join(canonical, 'AGENTS.md');
   const claudeSource = await pathExists(claudeOverride) ? claudeOverride : agentsFallback;
   const geminiSource = await pathExists(geminiOverride) ? geminiOverride : agentsFallback;
-  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini', 'github', 'ampcode']);
+  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini', 'github', 'ampcode', 'kilocode', 'roocode', 'windsurf']);
   const opencodeSkillsRoot = opts.scope === 'global' ? roots.opencodeConfigRoot : roots.opencodeRoot;
 
   const mappings: Mapping[] = [];
@@ -47,6 +47,8 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
       clients.has('codex') ? path.join(roots.codexRoot, 'AGENTS.md') : null,
       clients.has('opencode') ? path.join(roots.opencodeConfigRoot, 'AGENTS.md') : null,
       clients.has('ampcode') ? path.join(roots.ampcodeConfigRoot, 'AGENTS.md') : null,
+      clients.has('kilocode') ? path.join(roots.kilocodeRoot, 'AGENTS.md') : null,
+      clients.has('roocode') ? path.join(roots.roocodeRoot, 'AGENTS.md') : null,
     ].filter(Boolean) as string[];
 
     if (agentTargets.length > 0) {
@@ -54,6 +56,16 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         name: 'agents-md',
         source: agentsFallback,
         targets: agentTargets,
+        kind: 'file',
+      });
+    }
+
+    // Windsurf uses a single .windsurfrules file at the root level
+    if (clients.has('windsurf')) {
+      mappings.push({
+        name: 'windsurfrules',
+        source: agentsFallback,
+        targets: [path.join(roots.windsurfRoot, '.windsurfrules')],
         kind: 'file',
       });
     }
@@ -70,6 +82,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         clients.has('opencode') ? path.join(roots.opencodeRoot, 'commands') : null,
         clients.has('cursor') ? path.join(roots.cursorRoot, 'commands') : null,
         clients.has('gemini') ? path.join(roots.geminiRoot, 'commands') : null,
+        clients.has('roocode') ? path.join(roots.roocodeRoot, 'commands') : null,
       ].filter(Boolean) as string[],
       kind: 'dir',
     },
@@ -96,6 +109,16 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         clients.has('github')
           ? (opts.scope === 'global' ? path.join(roots.copilotRoot, 'skills') : path.join(roots.githubRoot, 'skills'))
           : null,
+        clients.has('roocode') ? path.join(roots.roocodeRoot, 'skills') : null,
+      ].filter(Boolean) as string[],
+      kind: 'dir',
+    },
+    {
+      name: 'rules',
+      source: path.join(canonical, 'rules'),
+      targets: [
+        clients.has('kilocode') ? path.join(roots.kilocodeRoot, 'rules') : null,
+        clients.has('roocode') ? path.join(roots.roocodeRoot, 'rules') : null,
       ].filter(Boolean) as string[],
       kind: 'dir',
     },
