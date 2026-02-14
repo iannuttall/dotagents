@@ -175,6 +175,7 @@ async function resolveMigrationConflicts(plan: Awaited<ReturnType<typeof scanMig
   const selections = new Map<string, MigrationCandidate | null>();
   for (let i = 0; i < plan.conflicts.length; i += 1) {
     const conflict = plan.conflicts[i];
+    if (!conflict) continue;
     const choice = await select({
       message: `Resolve migration conflict ${i + 1} of ${plan.conflicts.length}: ${conflict.label}`,
       options: conflict.candidates.map((c) => ({ label: c.label, value: c })),

@@ -42,7 +42,9 @@ export async function preflightBackup(opts: PreflightOptions): Promise<{ targets
 
   for (const task of opts.linkPlan.tasks) {
     if (await needsLinkBackup(task, opts.forceLinks)) {
-      targets.add(path.resolve(task.target));
+      if ('target' in task) {
+        targets.add(path.resolve(task.target));
+      }
     }
   }
 
