@@ -45,7 +45,7 @@ export function resolveRoots(opts: RootOptions): ResolvedRoots {
       ampcodeConfigRoot: path.join(homeDir, '.config', 'amp'),
       kilocodeRoot: path.join(homeDir, '.kilocode'),
       roocodeRoot: path.join(homeDir, '.roo'),
-      windsurfRoot: homeDir,
+      windsurfRoot: path.join(homeDir, '.windsurf'),
       projectRoot,
       homeDir,
     };
@@ -64,7 +64,7 @@ export function resolveRoots(opts: RootOptions): ResolvedRoots {
     ampcodeConfigRoot: path.join(homeDir, '.config', 'amp'),
     kilocodeRoot: path.join(projectRoot, '.kilocode'),
     roocodeRoot: path.join(projectRoot, '.roo'),
-    windsurfRoot: projectRoot,
+    windsurfRoot: path.join(projectRoot, '.windsurf'),
     projectRoot,
     homeDir,
   };
