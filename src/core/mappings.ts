@@ -18,7 +18,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
   const agentsFallback = path.join(canonical, 'AGENTS.md');
   const claudeSource = await pathExists(claudeOverride) ? claudeOverride : agentsFallback;
   const geminiSource = await pathExists(geminiOverride) ? geminiOverride : agentsFallback;
-  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini', 'github', 'ampcode']);
+  const clients = new Set<Client>(opts.clients ?? ['claude', 'factory', 'codex', 'cursor', 'opencode', 'gemini', 'github', 'ampcode', 'kilocode', 'roocode', 'windsurf']);
   const opencodeSkillsRoot = opts.scope === 'global' ? roots.opencodeConfigRoot : roots.opencodeRoot;
 
   const mappings: Mapping[] = [];
@@ -47,6 +47,9 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
       clients.has('codex') ? path.join(roots.codexRoot, 'AGENTS.md') : null,
       clients.has('opencode') ? path.join(roots.opencodeConfigRoot, 'AGENTS.md') : null,
       clients.has('ampcode') ? path.join(roots.ampcodeConfigRoot, 'AGENTS.md') : null,
+      clients.has('kilocode') ? path.join(roots.kilocodeRoot, 'AGENTS.md') : null,
+      clients.has('roocode') ? path.join(roots.roocodeRoot, 'AGENTS.md') : null,
+      clients.has('windsurf') ? path.join(roots.windsurfRoot, 'AGENTS.md') : null,
     ].filter(Boolean) as string[];
 
     if (agentTargets.length > 0) {
@@ -54,6 +57,16 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         name: 'agents-md',
         source: agentsFallback,
         targets: agentTargets,
+        kind: 'file',
+      });
+    }
+
+    // Windsurf also supports .windsurfrules as an alternative (legacy)
+    if (clients.has('windsurf')) {
+      mappings.push({
+        name: 'windsurfrules',
+        source: agentsFallback,
+        targets: [path.join(roots.windsurfRoot, '.windsurfrules')],
         kind: 'file',
       });
     }
@@ -70,6 +83,7 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         clients.has('opencode') ? path.join(roots.opencodeRoot, 'commands') : null,
         clients.has('cursor') ? path.join(roots.cursorRoot, 'commands') : null,
         clients.has('gemini') ? path.join(roots.geminiRoot, 'commands') : null,
+        clients.has('roocode') ? path.join(roots.roocodeRoot, 'commands') : null,
       ].filter(Boolean) as string[],
       kind: 'dir',
     },
@@ -96,8 +110,39 @@ export async function getMappings(opts: MappingOptions): Promise<Mapping[]> {
         clients.has('github')
           ? (opts.scope === 'global' ? path.join(roots.copilotRoot, 'skills') : path.join(roots.githubRoot, 'skills'))
           : null,
+        clients.has('kilocode') ? path.join(roots.kilocodeRoot, 'skills') : null,
+        clients.has('roocode') ? path.join(roots.roocodeRoot, 'skills') : null,
+        clients.has('windsurf') ? path.join(roots.windsurfRoot, 'skills') : null,
       ].filter(Boolean) as string[],
       kind: 'dir',
+    },
+    {
+      name: 'rules',
+      source: path.join(canonical, 'rules'),
+      targets: [
+        clients.has('kilocode') ? path.join(roots.kilocodeRoot, 'rules') : null,
+        clients.has('roocode') ? path.join(roots.roocodeRoot, 'rules') : null,
+        clients.has('windsurf') ? path.join(roots.windsurfRoot, 'rules') : null,
+      ].filter(Boolean) as string[],
+      kind: 'dir',
+    },
+    {
+      name: 'workflows',
+      source: path.join(canonical, 'workflows'),
+      targets: [
+        clients.has('kilocode') ? path.join(roots.kilocodeRoot, 'workflows') : null,
+        clients.has('windsurf') ? path.join(roots.windsurfRoot, 'workflows') : null,
+      ].filter(Boolean) as string[],
+      kind: 'dir',
+    },
+    {
+      name: 'ignore',
+      source: path.join(canonical, 'ignore'),
+      targets: [
+        clients.has('windsurf') ? path.join(roots.windsurfRoot, '.codeiumignore') : null,
+        clients.has('roocode') ? path.join(roots.roocodeRoot, '.rooignore') : null,
+      ].filter(Boolean) as string[],
+      kind: 'file',
     },
   );
 
